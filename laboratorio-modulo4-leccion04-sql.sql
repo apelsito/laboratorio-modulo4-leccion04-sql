@@ -206,7 +206,17 @@ ORDER BY numero_locales DESC
 LIMIT 1;
 
 --4.5. Obtén los municipios muya media de sensación térmica sea mayor que la media total.
-
+SELECT nombre, media_temperatura
+FROM (
+    SELECT m.nombre, ROUND(AVG(t.sensacion_termica), 2) AS media_temperatura
+    FROM tiempo t
+    INNER JOIN municipios m ON t.id_municipio = m.id_municipio
+    GROUP BY m.id_municipio
+) AS municipio_media
+WHERE media_temperatura > (
+    SELECT ROUND(AVG(sensacion_termica), 2) AS media_total
+    FROM tiempo t
+);
 --4.6. Selecciona los municipios con más de dos fuentes.
 SELECT * 	
 FROM (
@@ -237,16 +247,33 @@ FROM(
 	FROM tiempo t
 	NATURAL JOIN estado_cielo ec 
 	GROUP BY ec.nombre )
-ORDER BY temperatura_maxima DESC
+ORDER BY temperatura_maxima DESC;
 
---4.9. Muestra el número de locales por categoría que muy probablemente se encuentren abiertos.
+--4.9. Muestra el número de locales por categoría
+SELECT *
+FROM (
+	SELECT c.nombre , COUNT(l.id_categoria) AS num_locales_por_categoría
+	FROM lugares l 
+	INNER JOIN categorias c
+	ON l.id_categoria = c.id_categoria 
+	GROUP BY c.id_categoria)
+ORDER BY num_locales_por_categoría DESC;
 
-SELECT * FROM lugares l 
 
 --BONUS. 4.10. Encuentra los municipios que tengan más de 3 parques, los cuales se encuentren a una distancia menor 
---de las coordenadas de su municipio correspondiente que la del Parque Pavia. 
+--de las coordenadas de su municipio correspondiente que la del Parque Pavia. Esta parte no la puedo hacer xd
 --Además, el cielo debe estar despejado a las 12.
 
-
+SELECT *
+FROM( 
+	SELECT m.nombre AS municipio, COUNT(l.id_lugar) AS numero_parques
+	FROM lugares l
+	INNER JOIN categorias c
+	ON l.id_categoria = c.id_categoria 
+	INNER JOIN municipios m
+	ON l.id_municipio = m.id_municipio 
+	WHERE c.nombre = 'Park'
+	GROUP BY m.nombre)
+ORDER BY numero_parques DESC
 
 
